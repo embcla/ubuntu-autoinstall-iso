@@ -51,6 +51,7 @@ autoinstall:
     username: user
     hostname: hostname
     password: "passwd-hash"
+    groups: [sudo, adm]
 
   ssh:
     install-server: true
@@ -64,8 +65,8 @@ autoinstall:
   timezone: Europe/Amsterdam
   late-commands:
     # Add user to sudoers
-    - ['usermod', '-a', '-G', 'admin', 'user']
-    - ['usermod', '-s', '/bin/bash', 'user']
+#    - ['usermod', '-a', '-G', 'admin', 'user']
+#    - ['usermod', '-s', '/bin/bash', 'user']
     # One-command install, from https://tailscale.com/download/
     - ['sh', '-c', 'curl -fsSL https://tailscale.com/install.sh | sh']
     # Set sysctl settings for IP forwarding (useful when configuring an exit node)
