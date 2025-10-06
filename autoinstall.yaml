@@ -1,16 +1,23 @@
----
 #cloud-config
 autoinstall:
   version: 1
-  user-data:
-    - name: claudio
-      groups: users, admin
-      sudo: ALL=(ALL) NOPASSWD:ALL
-      shell: /bin/bash
+#  user-data:
+#    - name: claudio
+#      groups: users, admin
+#      sudo: ALL=(ALL) NOPASSWD:ALL
+#      shell: /bin/bash
+
+  early-commands:
+    # These run before network config, using packages from ISO
+    - ['apt-get', 'update']
+    - ['apt-get', 'install', '-y', 'iw', 'wpasupplicant', 'wireless-tools']
 
   packages:
     - fail2ban
     - ufw
+    - iw
+    - wireless-tools
+    - wpasupplicant
 
   apt:
     update: true
@@ -27,23 +34,23 @@ autoinstall:
   network:
     version: 2
     ethernets:
-      eth0:
+      enp0s31f6:
         dhcp4: true
     wifis:
-      wlan0:
+      wlp2s0:
         regulatory-domain: "IT"
         optional: true
         dhcp4: true
         access-points:
-          "Casa Carbocca":
+          "SSID":
             auth:
               key-management: "psk"
-              password: "ssid-password"
+              password: "passwd"
 
   identity:
     username: user
-    hostname: linux-autoinstall
-    password: "hash"
+    hostname: hostname
+    password: "passwd-hash"
 
   ssh:
     install-server: true
@@ -56,6 +63,9 @@ autoinstall:
 
   timezone: Europe/Amsterdam
   late-commands:
+    # Add user to sudoers
+    - ['usermod', '-a', '-G', 'admin', 'user']
+    - ['usermod', '-s', '/bin/bash', 'user']
     # One-command install, from https://tailscale.com/download/
     - ['sh', '-c', 'curl -fsSL https://tailscale.com/install.sh | sh']
     # Set sysctl settings for IP forwarding (useful when configuring an exit node)
