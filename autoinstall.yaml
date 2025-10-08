@@ -1,11 +1,14 @@
 #cloud-config
 autoinstall:
   version: 1
-#  user-data:
-#    - name: claudio
-#      groups: users, admin
-#      sudo: ALL=(ALL) NOPASSWD:ALL
-#      shell: /bin/bash
+  user-data:
+    users:
+    - name: claudio
+      passwd: "hash"
+      groups: users, admin
+      sudo: ALL=(ALL) NOPASSWD:ALL
+      shell: /bin/bash
+  hostname: hostname
 
   early-commands:
     # These run before network config, using packages from ISO
@@ -46,13 +49,6 @@ autoinstall:
             auth:
               key-management: "psk"
               password: "passwd"
-
-  identity:
-    username: user
-    hostname: hostname
-    password: "passwd-hash"
-    groups: [sudo, adm]
-
   ssh:
     install-server: true
     allow-pw: false
@@ -64,10 +60,7 @@ autoinstall:
 
   timezone: Europe/Amsterdam
   late-commands:
-    # Add user to sudoers
-#    - ['usermod', '-a', '-G', 'admin', 'user']
-#    - ['usermod', '-s', '/bin/bash', 'user']
-    # One-command install, from https://tailscale.com/download/
+   # One-command install, from https://tailscale.com/download/
     - ['sh', '-c', 'curl -fsSL https://tailscale.com/install.sh | sh']
     # Set sysctl settings for IP forwarding (useful when configuring an exit node)
     - ['sh', '-c', "echo 'net.ipv4.ip_forward = 1' | sudo tee -a /etc/sysctl.d/99-tailscale.conf && echo 'net.ipv6.conf.all.forwarding = 1' | sudo tee -a /etc/sysctl.d/99-tailscale.conf && sudo sysctl -p /etc/sysctl.d/99-tailscale.conf"]
@@ -77,7 +70,5 @@ autoinstall:
     - ['tailscale', 'up', 'tskey-auth-hash']
     # (Optional) Include this line to make this node available over Tailscale SSH
     - ['tailscale', 'set', '--ssh --accept-dns']
-    # (Optional) Include this line to configure this machine as an exit node
-    - ['tailscale', 'set', '--advertise-exit-node']
   shutdown:
     reboot
